@@ -16,6 +16,9 @@ description = "Implementation of the SHA-3 family of cryptographic hash algorith
 digest = "0.11"
 keccak = "0.2"
 
+[target.'cfg(target_os = "zkvm")'.dependencies]
+openvm-keccak256 = { git = "https://github.com/openvm-org/openvm", branch = "develop-v2.0.0-rc.1", default-features = false, features = [] }
+
 [dev-dependencies]
 digest = { version = "0.11", features = ["dev"] }
 hex-literal = "1"

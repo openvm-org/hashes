@@ -22,6 +22,9 @@ const KECCAK_PAD: u8 = 0x01;
 const SHA3_PAD: u8 = 0x06;
 const SHAKE_PAD: u8 = 0x1f;
 
+#[cfg(target_os = "zkvm")]
+mod zkvm_impl;
+
 digest::buffer_fixed!(
     /// SHA-3-224 hasher.
     pub struct Sha3_224(Sha3HasherCore<U144, U28, SHA3_PAD>);
@@ -75,11 +78,14 @@ digest::buffer_fixed!(
     pub struct Keccak224(Sha3HasherCore<U144, U28, KECCAK_PAD>);
     impl: FixedHashTraits;
 );
+#[cfg(not(target_os = "zkvm"))]
 digest::buffer_fixed!(
     /// Keccak-256 hasher.
     pub struct Keccak256(Sha3HasherCore<U136, U32, KECCAK_PAD>);
     impl: FixedHashTraits;
 );
+#[cfg(target_os = "zkvm")]
+pub use zkvm_impl::Keccak256;
 digest::buffer_fixed!(
     /// Keccak-384 hasher.
     pub struct Keccak384(Sha3HasherCore<U104, U48, KECCAK_PAD>);
