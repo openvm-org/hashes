@@ -37,7 +37,8 @@ impl OutputSizeUser for Keccak256 {
 
 impl FixedOutput for Keccak256 {
     fn finalize_into(self, out: &mut Output<Self>) {
-        self.inner.finalize(out);
+        // SAFETY: Output<Self> is GenericArray<u8, U32>, always exactly 32 bytes.
+        unsafe { self.inner.finalize(out) };
     }
 }
 
