@@ -63,8 +63,11 @@
     html_logo_url = "https://raw.githubusercontent.com/RustCrypto/media/6ee8e381/logo.svg",
     html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/6ee8e381/logo.svg"
 )]
-#![forbid(unsafe_code)]
+#![cfg_attr(not(target_os = "zkvm"), forbid(unsafe_code))]
 #![warn(missing_docs, rust_2018_idioms)]
+
+#[cfg(all(target_os = "zkvm", not(target_endian = "little")))]
+compile_error!("the zkvm keccak backend assumes a little-endian target");
 
 pub use digest::{self, Digest};
 

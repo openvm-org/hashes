@@ -1,0 +1,15 @@
+[package]
+name = "zkvm-sha3-test"
+version = "0.1.0"
+edition = "2018"
+
+[dependencies]
+sha3 = { version = "0.10.8", default-features = false }
+openvm = { git = "https://github.com/openvm-org/openvm", branch = "develop-v2.0.0-rc.1" }
+hex-literal = "1"
+
+# Keep this package independent from the parent workspace
+[workspace]
+
+[patch.crates-io]
+sha3 = { path = "../../" }
