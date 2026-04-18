@@ -52,6 +52,9 @@
 )]
 #![warn(missing_docs, rust_2018_idioms)]
 
+#[cfg(all(target_os = "zkvm", not(target_endian = "little")))]
+compile_error!("sha2 zkvm backend requires a little-endian target");
+
 pub use digest::{self, Digest};
 
 #[cfg(feature = "oid")]
