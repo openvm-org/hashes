@@ -19,9 +19,6 @@ categories = ["cryptography", "no-std"]
 digest = "0.10.4"
 keccak = "0.1.4"
 
-[target.'cfg(target_os = "zkvm")'.dependencies]
-openvm-keccak256 = { git = "https://github.com/openvm-org/openvm", branch = "develop-v1.6.0", default-features = false, features = [] }
-
 [dev-dependencies]
 digest = { version = "0.10.4", features = ["dev"] }
 hex-literal = "0.2.2"
