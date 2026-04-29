@@ -10,7 +10,29 @@ use digest::{
     common::hazmat::{DeserializeStateError, SerializableState, SerializedState},
     typenum::{IsLessOrEqual, True, U0, U200},
 };
-use keccak::{Keccak, State1600};
+use keccak::{Fn1600, Keccak, State1600};
+
+#[cfg(all(target_os = "zkvm", not(target_endian = "little")))]
+compile_error!("the zkvm target must be little-endian");
+
+#[cfg(all(target_os = "zkvm", not(keccak_backend = "soft")))]
+#[inline]
+fn with_f1600(_: &Keccak, f: impl FnOnce(Fn1600)) {
+    fn openvm_f1600(state: &mut State1600) {
+        // SAFETY: state is a valid 200-byte buffer (State1600 = [u64; 25]),
+        // properly aligned for the openvm intrinsic (MIN_ALIGN = 4).
+        unsafe {
+            openvm_keccak256_guest::native_keccakf(state.as_mut_ptr() as *mut u8);
+        }
+    }
+    f(openvm_f1600);
+}
+
+#[cfg(not(all(target_os = "zkvm", not(keccak_backend = "soft"))))]
+#[inline]
+fn with_f1600(k: &Keccak, f: impl FnOnce(Fn1600)) {
+    k.with_f1600(f);
+}
 
 /// Core SHA-3 hasher state.
 #[derive(Clone)]
@@ -62,7 +84,7 @@ where
 {
     #[inline]
     fn update_blocks(&mut self, blocks: &[Block<Self>]) {
-        self.keccak.with_f1600(|f1600| {
+        with_f1600(&self.keccak, |f1600| {
             for block in blocks {
                 xor_block(&mut self.state, block);
                 f1600(&mut self.state);
@@ -84,7 +106,7 @@ where
         let n = block.len();
         block[n - 1] |= 0x80;
 
-        self.keccak.with_f1600(|f1600| {
+        with_f1600(&self.keccak, |f1600| {
             xor_block(&mut self.state, &block);
             f1600(&mut self.state);
 
@@ -109,7 +131,7 @@ where
         let n = block.len();
         block[n - 1] |= 0x80;
 
-        self.keccak.with_f1600(|f1600| {
+        with_f1600(&self.keccak, |f1600| {
             xor_block(&mut self.state, &block);
             f1600(&mut self.state);
         });
@@ -260,7 +282,7 @@ where
         for (src, dst) in self.state.iter().zip(block.chunks_mut(8)) {
             dst.copy_from_slice(&src.to_le_bytes()[..dst.len()]);
         }
-        self.keccak.with_f1600(|f1600| f1600(&mut self.state));
+        with_f1600(&self.keccak, |f1600| f1600(&mut self.state));
         block
     }
 }
@@ -293,6 +315,21 @@ impl<Rate> digest::zeroize::ZeroizeOnDrop for Sha3ReaderCore<Rate> where
 {
 }
 
+#[cfg(all(target_os = "zkvm", not(keccak_backend = "soft")))]
+pub(crate) fn xor_block(state: &mut State1600, block: &[u8]) {
+    assert!(size_of_val(block) < size_of_val(state));
+    // SAFETY: state is a valid 200-byte buffer, block is a valid slice, and
+    // the openvm intrinsic handles partial alignment internally.
+    unsafe {
+        openvm_keccak256_guest::native_xorin(
+            state.as_mut_ptr() as *mut u8,
+            block.as_ptr(),
+            block.len(),
+        );
+    }
+}
+
+#[cfg(not(all(target_os = "zkvm", not(keccak_backend = "soft"))))]
 pub(crate) fn xor_block(state: &mut State1600, block: &[u8]) {
     assert!(size_of_val(block) < size_of_val(state));
 

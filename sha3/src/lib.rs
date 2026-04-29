@@ -5,7 +5,10 @@
     html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/6ee8e381/logo.svg"
 )]
 #![cfg_attr(docsrs, feature(doc_cfg))]
-#![forbid(unsafe_code)]
+#![cfg_attr(
+    not(all(target_os = "zkvm", not(keccak_backend = "soft"))),
+    forbid(unsafe_code)
+)]
 #![warn(missing_docs, missing_debug_implementations)]
 #![warn(unreachable_pub)]
 
