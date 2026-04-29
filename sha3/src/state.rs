@@ -22,6 +22,8 @@ fn xor_block_into_state(state: &mut [u64; PLEN], block: &[u8]) {
 
 #[inline(always)]
 fn p1600(state: &mut [u64; PLEN], round_count: usize) {
+    // The openvm keccak256 zkVM extension only implements the standard 24-round
+    // Keccak-f[1600]; reduced-round Keccak-p variants fall back to software.
     #[cfg(target_os = "zkvm")]
     if round_count == DEFAULT_ROUND_COUNT {
         unsafe {
