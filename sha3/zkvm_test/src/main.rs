@@ -8,39 +8,33 @@ use openvm_sdk::{
 };
 use openvm_sdk_config::SdkVmConfig;
 use openvm_stark_sdk::config::{app_params_with_100_bits_security, MAX_APP_LOG_STACKED_HEIGHT};
-use openvm_stark_sdk::utils::setup_tracing;
 
 const KECCAK_AIR_PREFIXES: &[&str] = &["Keccakf", "Xorin"];
 
 fn main() -> Result<()> {
-    setup_tracing();
-
     let guest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("programs");
     let openvm_toml_path = guest_dir.join("openvm.toml");
     let openvm_toml = std::fs::read_to_string(&openvm_toml_path)
         .map_err(|e| eyre!("Failed to read {openvm_toml_path:?}: {e}"))?;
     let vm_config = SdkVmConfig::from_toml(&openvm_toml)
         .map_err(|e| eyre!("Failed to parse openvm.toml: {e}"))?;
-    let app_config =
-        AppConfig::new(vm_config, app_params_with_100_bits_security(MAX_APP_LOG_STACKED_HEIGHT));
+    let app_params = app_params_with_100_bits_security(MAX_APP_LOG_STACKED_HEIGHT);
+    let app_config = AppConfig::new(vm_config, app_params);
 
     let sdk = Sdk::new(app_config, AggregationSystemParams::default())?;
     let target_filter = Some(TargetFilter {
-        name: "keccak256".to_string(),
+        name: "kat".to_string(),
         kind: "example".to_string(),
     });
     let elf = sdk.build(Default::default(), &guest_dir, &target_filter, None)?;
     let exe = sdk.convert_to_exe(elf)?;
 
-    // Create app_prover to get access to the VM (for metered execution)
-    // and the converted exe, without constructing them separately.
     let app_prover = sdk.app_prover(exe)?;
     let vm = app_prover.vm();
     let exe = app_prover.exe();
 
     let air_names: Vec<String> = vm.air_names().map(|s| s.to_string()).collect();
 
-    // Identify keccak chip AIRs by matching name prefixes
     let keccak_airs: Vec<(usize, &str)> = air_names
         .iter()
         .enumerate()
@@ -54,7 +48,6 @@ fn main() -> Result<()> {
         ));
     }
 
-    // Run metered execution to collect per-AIR trace heights
     let ctx = vm.build_metered_ctx(&exe);
     let interpreter = vm
         .metered_interpreter(&exe)
@@ -63,10 +56,7 @@ fn main() -> Result<()> {
         .execute_metered(StdIn::default(), ctx)
         .map_err(|e| eyre!("Metered execution failed: {e}"))?;
 
-    // Verify that at least one keccak AIR has a non-zero trace height,
-    // which confirms the custom keccak opcodes were actually executed.
     let mut any_keccak_used = false;
-
     for (seg_idx, segment) in segments.iter().enumerate() {
         println!("Segment {seg_idx} (num_insns: {}):", segment.num_insns);
         for &(air_idx, air_name) in &keccak_airs {

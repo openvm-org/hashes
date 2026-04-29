@@ -63,8 +63,11 @@
     html_logo_url = "https://raw.githubusercontent.com/RustCrypto/media/6ee8e381/logo.svg",
     html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/6ee8e381/logo.svg"
 )]
-#![forbid(unsafe_code)]
+#![cfg_attr(not(target_os = "zkvm"), forbid(unsafe_code))]
 #![warn(missing_docs, rust_2018_idioms)]
+
+#[cfg(all(target_os = "zkvm", not(target_endian = "little")))]
+compile_error!("the zkvm keccak backend assumes a little-endian target");
 
 pub use digest::{self, Digest};
 
@@ -99,12 +102,7 @@ const CSHAKE: u8 = 0x4;
 const TURBO_SHAKE_ROUND_COUNT: usize = 12;
 
 impl_sha3!(Keccak224Core, Keccak224, U28, U144, KECCAK, "Keccak-224");
-#[cfg(not(target_os = "zkvm"))]
 impl_sha3!(Keccak256Core, Keccak256, U32, U136, KECCAK, "Keccak-256");
-#[cfg(target_os = "zkvm")]
-mod zkvm_impl;
-#[cfg(target_os = "zkvm")]
-pub use zkvm_impl::Keccak256;
 impl_sha3!(Keccak384Core, Keccak384, U48, U104, KECCAK, "Keccak-384");
 impl_sha3!(Keccak512Core, Keccak512, U64, U72, KECCAK, "Keccak-512");
 
