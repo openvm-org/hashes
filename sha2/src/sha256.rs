@@ -40,6 +40,9 @@ cfg_if::cfg_if! {
             // SAFETY: we checked above that the required target features are enabled
             unsafe { aarch64_sha2::compress(state, blocks) }
         }
+    } else if #[cfg(target_os = "zkvm")] {
+        mod zkvm;
+        use zkvm::compress;
     } else if #[cfg(target_arch = "loongarch64")] {
         mod loongarch64_asm;
         use loongarch64_asm::compress;

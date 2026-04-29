@@ -16,6 +16,9 @@
 )]
 #![allow(clippy::needless_range_loop)]
 
+#[cfg(all(target_os = "zkvm", not(target_endian = "little")))]
+compile_error!("sha2 zkVM backend requires a little-endian target");
+
 pub use digest::{self, Digest};
 
 use digest::{
