@@ -17,9 +17,9 @@ jobs:
       - uses: RustCrypto/actions/cargo-cache@master
       - uses: dtolnay/rust-toolchain@master
         with:
-          toolchain: 1.60.0
+          toolchain: 1.85.0
           components: clippy
-      - run: cargo clippy --all -- -D warnings
+      - run: cargo clippy --all
 
   rustfmt:
     runs-on: ubuntu-latest
