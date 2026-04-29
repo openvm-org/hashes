@@ -8,21 +8,18 @@ use openvm_sdk::{
 };
 use openvm_sdk_config::SdkVmConfig;
 use openvm_stark_sdk::config::{app_params_with_100_bits_security, MAX_APP_LOG_STACKED_HEIGHT};
-use openvm_stark_sdk::utils::setup_tracing;
 
 const SHA2_AIR_PREFIXES: &[&str] = &["Sha2MainAir", "Sha2BlockHasherVmAir"];
 
 fn main() -> Result<()> {
-    setup_tracing();
-
     let guest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("programs");
     let openvm_toml_path = guest_dir.join("openvm.toml");
     let openvm_toml = std::fs::read_to_string(&openvm_toml_path)
         .map_err(|e| eyre!("Failed to read {openvm_toml_path:?}: {e}"))?;
     let vm_config = SdkVmConfig::from_toml(&openvm_toml)
         .map_err(|e| eyre!("Failed to parse openvm.toml: {e}"))?;
-    let app_config =
-        AppConfig::new(vm_config, app_params_with_100_bits_security(MAX_APP_LOG_STACKED_HEIGHT));
+    let app_params = app_params_with_100_bits_security(MAX_APP_LOG_STACKED_HEIGHT);
+    let app_config = AppConfig::new(vm_config, app_params);
 
     let sdk = Sdk::new(app_config, AggregationSystemParams::default())?;
     let target_filter = Some(TargetFilter {
