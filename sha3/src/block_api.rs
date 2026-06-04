@@ -315,23 +315,26 @@ impl<Rate> digest::zeroize::ZeroizeOnDrop for Sha3ReaderCore<Rate> where
 {
 }
 
-#[cfg(all(target_os = "zkvm", not(keccak_backend = "soft")))]
 pub(crate) fn xor_block(state: &mut State1600, block: &[u8]) {
     assert!(size_of_val(block) < size_of_val(state));
-    // SAFETY: state is a valid 200-byte buffer, block is a valid slice, and
-    // the openvm intrinsic handles partial alignment internally.
-    unsafe {
-        openvm_keccak256_guest::native_xorin(
-            state.as_mut_ptr() as *mut u8,
-            block.as_ptr(),
-            block.len(),
-        );
-    }
-}
 
-#[cfg(not(all(target_os = "zkvm", not(keccak_backend = "soft"))))]
-pub(crate) fn xor_block(state: &mut State1600, block: &[u8]) {
-    assert!(size_of_val(block) < size_of_val(state));
+    // The XORIN circuit absorbs at most `KECCAK_RATE` (136) bytes per
+    // instruction, so sponges with a larger rate (SHA3-224, SHAKE128) fall
+    // through to the software XOR below. The permutation still uses the
+    // native KECCAKF intrinsic.
+    #[cfg(all(target_os = "zkvm", not(keccak_backend = "soft")))]
+    if block.len() <= openvm_keccak256_guest::KECCAK_RATE {
+        // SAFETY: state is a valid 200-byte buffer, block is a valid slice,
+        // and the openvm intrinsic handles partial alignment internally.
+        unsafe {
+            openvm_keccak256_guest::native_xorin(
+                state.as_mut_ptr() as *mut u8,
+                block.as_ptr(),
+                block.len(),
+            );
+        }
+        return;
+    }
 
     let mut chunks = block.chunks_exact(8);
     for (s, chunk) in state.iter_mut().zip(&mut chunks) {
