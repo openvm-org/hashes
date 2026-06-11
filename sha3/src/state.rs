@@ -1,4 +1,3 @@
-#[cfg(not(target_os = "zkvm"))]
 use core::convert::TryInto;
 
 const PLEN: usize = 25;
@@ -6,15 +5,21 @@ const DEFAULT_ROUND_COUNT: usize = 24;
 
 #[inline(always)]
 fn xor_block_into_state(state: &mut [u64; PLEN], block: &[u8]) {
+    // The XORIN circuit absorbs at most `KECCAK_RATE` (136) bytes per
+    // instruction, so sponges with a larger rate (SHA3-224, SHAKE128) fall
+    // through to the software XOR below. The permutation still uses the
+    // native KECCAKF intrinsic.
     #[cfg(target_os = "zkvm")]
-    unsafe {
-        openvm_keccak256_guest::native_xorin(
-            state.as_mut_ptr() as *mut u8,
-            block.as_ptr(),
-            block.len(),
-        );
+    if block.len() <= openvm_keccak256_guest::KECCAK_RATE {
+        unsafe {
+            openvm_keccak256_guest::native_xorin(
+                state.as_mut_ptr() as *mut u8,
+                block.as_ptr(),
+                block.len(),
+            );
+        }
+        return;
     }
-    #[cfg(not(target_os = "zkvm"))]
     for (b, s) in block.chunks_exact(8).zip(state.iter_mut()) {
         *s ^= u64::from_le_bytes(b.try_into().unwrap());
     }
