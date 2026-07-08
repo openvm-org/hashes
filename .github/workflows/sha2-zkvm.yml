@@ -1,0 +1,29 @@
+name: sha2-zkvm
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/sha2-zkvm.yml"
+      - "sha2/src/**"
+      - "sha2/Cargo.toml"
+      - "sha2/zkvm_test/**"
+  push:
+    branches: master
+
+defaults:
+  run:
+    working-directory: sha2/zkvm_test
+
+jobs:
+  zkvm-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: stable
+          components: rust-src, llvm-tools-preview
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: sha2/zkvm_test
+      - run: ./test.sh
