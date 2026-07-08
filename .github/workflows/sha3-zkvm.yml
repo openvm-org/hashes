@@ -1,0 +1,29 @@
+name: sha3-zkvm
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/sha3-zkvm.yml"
+      - "sha3/src/**"
+      - "sha3/Cargo.toml"
+      - "sha3/zkvm_test/**"
+  push:
+    branches: master
+
+defaults:
+  run:
+    working-directory: sha3/zkvm_test
+
+jobs:
+  zkvm-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: stable
+          components: rust-src, llvm-tools-preview
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: sha3/zkvm_test
+      - run: ./test.sh
