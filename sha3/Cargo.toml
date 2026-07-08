@@ -29,5 +29,9 @@ alloc = ["digest/alloc"]
 oid = ["digest/oid"] # Enable OID support.
 zeroize = ["digest/zeroize"]
 
+[lints.rust.unexpected_cfgs]
+level = "warn"
+check-cfg = ['cfg(keccak_backend, values("soft"))']
+
 [package.metadata.docs.rs]
 all-features = true
