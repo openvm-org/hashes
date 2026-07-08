@@ -17,7 +17,7 @@ digest = "0.11"
 keccak = "0.2"
 
 [target.'cfg(target_os = "zkvm")'.dependencies]
-openvm-keccak256-guest = { git = "https://github.com/openvm-org/openvm", branch = "develop-v2.0.0-rc.2", default-features = false }
+openvm-keccak256-guest = { git = "https://github.com/openvm-org/openvm", tag = "v2.0.0", default-features = false }
 
 [dev-dependencies]
 digest = { version = "0.11", features = ["dev"] }
