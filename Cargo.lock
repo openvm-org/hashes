@@ -266,7 +266,7 @@ dependencies = [
 [[package]]
 name = "openvm-custom-insn"
 version = "0.1.0"
-source = "git+https://github.com/openvm-org/openvm?branch=develop-v2.0.0-rc.2#3a85a1bc4c39ef0d3fd760d58ab3bc19342f683f"
+source = "git+https://github.com/openvm-org/openvm?tag=v2.0.0#15a7ab6baed03d75050dbef2bbad4b4e98fb8dba"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -275,16 +275,16 @@ dependencies = [
 
 [[package]]
 name = "openvm-keccak256-guest"
-version = "2.0.0-beta.2"
-source = "git+https://github.com/openvm-org/openvm?branch=develop-v2.0.0-rc.2#3a85a1bc4c39ef0d3fd760d58ab3bc19342f683f"
+version = "2.0.0"
+source = "git+https://github.com/openvm-org/openvm?tag=v2.0.0#15a7ab6baed03d75050dbef2bbad4b4e98fb8dba"
 dependencies = [
  "openvm-platform",
 ]
 
 [[package]]
 name = "openvm-platform"
-version = "2.0.0-beta.2"
-source = "git+https://github.com/openvm-org/openvm?branch=develop-v2.0.0-rc.2#3a85a1bc4c39ef0d3fd760d58ab3bc19342f683f"
+version = "2.0.0"
+source = "git+https://github.com/openvm-org/openvm?tag=v2.0.0#15a7ab6baed03d75050dbef2bbad4b4e98fb8dba"
 dependencies = [
  "openvm-custom-insn",
  "openvm-rv32im-guest",
@@ -292,8 +292,8 @@ dependencies = [
 
 [[package]]
 name = "openvm-rv32im-guest"
-version = "2.0.0-beta.2"
-source = "git+https://github.com/openvm-org/openvm?branch=develop-v2.0.0-rc.2#3a85a1bc4c39ef0d3fd760d58ab3bc19342f683f"
+version = "2.0.0"
+source = "git+https://github.com/openvm-org/openvm?tag=v2.0.0#15a7ab6baed03d75050dbef2bbad4b4e98fb8dba"
 dependencies = [
  "openvm-custom-insn",
  "strum_macros",
