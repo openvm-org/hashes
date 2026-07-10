@@ -23,7 +23,7 @@ cpufeatures = "0.2"
 sha2-asm = { version = "0.6.1", optional = true }
 
 [target.'cfg(target_os = "zkvm")'.dependencies]
-openvm-sha2-guest = { git = "https://github.com/openvm-org/openvm", branch = "develop-v2.0.0-rc.2", default-features = false }
+openvm-sha2-guest = { git = "https://github.com/openvm-org/openvm", tag = "v2.0.0", default-features = false }
 
 [dev-dependencies]
 digest = { version = "0.10.7", features = ["dev"] }
